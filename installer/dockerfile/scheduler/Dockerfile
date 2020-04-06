@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM alpine:latest
+FROM centos:latest
 
 ADD vc-scheduler /vc-scheduler
 ENTRYPOINT ["/vc-scheduler"]

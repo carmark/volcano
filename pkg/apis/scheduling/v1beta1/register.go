@@ -30,10 +30,10 @@ var (
 
 const (
 	// GroupName is the group name used in this package.
-	GroupName = "scheduling.volcano.sh"
+	GroupName = "scheduling.incubator.k8s.io"
 
 	// GroupVersion is the version of scheduling group
-	GroupVersion = "v1beta1"
+	GroupVersion = "v1alpha1"
 )
 
 // SchemeGroupVersion is the group version used to register these objects.

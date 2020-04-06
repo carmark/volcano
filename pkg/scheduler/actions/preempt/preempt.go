@@ -98,6 +98,7 @@ func (alloc *preemptAction) Execute(ssn *framework.Session) {
 			for {
 				// If job is pipelined, then stop preempting.
 				if ssn.JobPipelined(preemptorJob) {
+					klog.V(3).Infof("Job <%s/%s> is pipelined", preemptorJob.Namespace, preemptorJob.Name)
 					break
 				}
 
@@ -123,14 +124,17 @@ func (alloc *preemptAction) Execute(ssn *framework.Session) {
 					// Preempt other jobs within queue
 					return job.Queue == preemptorJob.Queue && preemptor.Job != task.Job
 				}); preempted {
+					klog.V(3).Infof("Preemptor task <%#v> is assigned", preemptor)
 					assigned = true
 				}
 			}
 
 			// Commit changes only if job is pipelined, otherwise try next job.
 			if ssn.JobPipelined(preemptorJob) {
+				klog.V(3).Infof("Job <%s/%s> is pipelined", preemptorJob.Namespace, preemptorJob.Name)
 				stmt.Commit()
 			} else {
+				klog.V(3).Infof("Job <%s/%s> is not pipelined, discard", preemptorJob.Namespace, preemptorJob.Name)
 				stmt.Discard()
 				continue
 			}
