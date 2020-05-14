@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM alpine:latest
+FROM centos:latest
 
 ADD vc-controller-manager /vc-controller-manager
 ENTRYPOINT ["/vc-controller-manager"]

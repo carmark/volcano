@@ -143,38 +143,6 @@ func (alloc *preemptAction) Execute(ssn *framework.Session) {
 				preemptors.Push(preemptorJob)
 			}
 		}
-
-		// Preemption between Task within Job.
-		for _, job := range underRequest {
-			for {
-				if _, found := preemptorTasks[job.UID]; !found {
-					break
-				}
-
-				if preemptorTasks[job.UID].Empty() {
-					break
-				}
-
-				preemptor := preemptorTasks[job.UID].Pop().(*api.TaskInfo)
-
-				stmt := ssn.Statement()
-				assigned, _ := preempt(ssn, stmt, preemptor, func(task *api.TaskInfo) bool {
-					// Ignore non running task.
-					if task.Status != api.Running {
-						return false
-					}
-
-					// Preempt tasks within job.
-					return preemptor.Job == task.Job
-				})
-				stmt.Commit()
-
-				// If no preemption, next job.
-				if !assigned {
-					break
-				}
-			}
-		}
 	}
 }
 
