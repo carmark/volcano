@@ -135,11 +135,6 @@ type defaultEvictor struct {
 //Evict will send delete pod request to api server
 func (de *defaultEvictor) Evict(p *v1.Pod, reason string) error {
 	klog.V(3).Infof("Evicting pod %v/%v, because of %v", p.Namespace, p.Name, reason)
-	if err := de.kubeclient.CoreV1().Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{}); err != nil {
-		klog.Errorf("Failed to evict pod <%v/%v>: %#v", p.Namespace, p.Name, err)
-		return err
-	}
-
 	evictMsg := fmt.Sprintf("Pod is evicted, because of %v", reason)
 	annotations := map[string]string{}
 	// record that we are evicting the pod
@@ -147,17 +142,26 @@ func (de *defaultEvictor) Evict(p *v1.Pod, reason string) error {
 
 	pod := p.DeepCopy()
 	//pod.Status.Phase = v1.PodFailed
-	pod.Status.Message = evictMsg
-	pod.Status.Reason = "Evicted"
+	//pod.Status.Message = evictMsg
+	//pod.Status.Reason = "Evicted"
 	condition := &v1.PodCondition{
 		Type:    v1.PodReady,
 		Status:  v1.ConditionFalse,
 		Reason:  "Evict",
 		Message: reason,
 	}
-	podutil.UpdatePodCondition(&pod.Status, condition)
-	if _, err := de.kubeclient.CoreV1().Pods(p.Namespace).UpdateStatus(pod); err != nil {
-		klog.Errorf("Failed to update pod <%v/%v> status: %v", err)
+	if podutil.UpdatePodCondition(&pod.Status, condition) == false {
+		klog.V(1).Infof("UpdatePodCondition: existed condition, not update")
+		klog.V(1).Infof("%+v", pod.Status.Conditions)
+		return nil
+	} else {
+		if _, err := de.kubeclient.CoreV1().Pods(p.Namespace).UpdateStatus(pod); err != nil {
+			klog.Errorf("Failed to update pod <%v/%v> status: %v", err)
+			return err
+		}
+	}
+	if err := de.kubeclient.CoreV1().Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{}); err != nil {
+		klog.Errorf("Failed to evict pod <%v/%v>: %#v", p.Namespace, p.Name, err)
 		return err
 	}
 

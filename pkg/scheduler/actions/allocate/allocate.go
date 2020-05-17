@@ -240,6 +240,7 @@ func (alloc *allocateAction) Execute(ssn *framework.Session) {
 			stmt.Commit()
 		} else {
 			stmt.Discard()
+			break
 		}
 
 		// Added Namespace back until no job in Namespace.
