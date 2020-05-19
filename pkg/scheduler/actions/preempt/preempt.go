@@ -116,7 +116,10 @@ func (alloc *preemptAction) Execute(ssn *framework.Session) {
 					if task.Status != api.Running {
 						return false
 					}
-
+					// Ignore task with empty resource request.
+					if task.Resreq.IsEmpty() {
+						return false
+					}
 					job, found := ssn.Jobs[task.Job]
 					if !found {
 						return false
@@ -187,6 +190,7 @@ func preempt(
 
 		var preemptees []*api.TaskInfo
 		for _, task := range node.Tasks {
+
 			if filter == nil {
 				preemptees = append(preemptees, task.Clone())
 			} else if filter(task) {
