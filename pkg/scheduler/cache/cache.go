@@ -423,7 +423,6 @@ func (sc *SchedulerCache) Run(stopCh <-chan struct{}) {
 
 // WaitForCacheSync sync the cache with the api server
 func (sc *SchedulerCache) WaitForCacheSync(stopCh <-chan struct{}) bool {
-
 	return cache.WaitForCacheSync(stopCh,
 		func() []cache.InformerSynced {
 			informerSynced := []cache.InformerSynced{
@@ -765,31 +764,31 @@ func (sc *SchedulerCache) String() string {
 	str := "Cache:\n"
 
 	if len(sc.Nodes) != 0 {
-		str = str + "Nodes:\n"
+		str += "Nodes:\n"
 		for _, n := range sc.Nodes {
-			str = str + fmt.Sprintf("\t %s: idle(%v) used(%v) allocatable(%v) pods(%d)\n",
+			str += fmt.Sprintf("\t %s: idle(%v) used(%v) allocatable(%v) pods(%d)\n",
 				n.Name, n.Idle, n.Used, n.Allocatable, len(n.Tasks))
 
 			i := 0
 			for _, p := range n.Tasks {
-				str = str + fmt.Sprintf("\t\t %d: %v\n", i, p)
+				str += fmt.Sprintf("\t\t %d: %v\n", i, p)
 				i++
 			}
 		}
 	}
 
 	if len(sc.Jobs) != 0 {
-		str = str + "Jobs:\n"
+		str += "Jobs:\n"
 		for _, job := range sc.Jobs {
-			str = str + fmt.Sprintf("\t %s\n", job)
+			str += fmt.Sprintf("\t %s\n", job)
 		}
 	}
 
 	if len(sc.NamespaceCollection) != 0 {
-		str = str + "Namespaces:\n"
+		str += "Namespaces:\n"
 		for _, ns := range sc.NamespaceCollection {
 			info := ns.Snapshot()
-			str = str + fmt.Sprintf("\t Namespace(%s) Weight(%v)\n",
+			str += fmt.Sprintf("\t Namespace(%s) Weight(%v)\n",
 				info.Name, info.Weight)
 		}
 	}
@@ -859,6 +858,5 @@ func (sc *SchedulerCache) recordPodGroupEvent(podGroup *schedulingapi.PodGroup, 
 		klog.Errorf("Error while converting PodGroup to v1alpha1.PodGroup with error: %v", err)
 		return
 	}
-
 	sc.Recorder.Eventf(pg, eventType, reason, msg)
 }
