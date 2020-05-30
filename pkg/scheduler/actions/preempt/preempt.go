@@ -109,7 +109,7 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 
 				preemptor := preemptorTasks[preemptorJob.UID].Pop().(*api.TaskInfo)
 
-				if preempted := preempt(ssn, stmt, preemptor, func(task *api.TaskInfo) bool {
+				if preempted, _ := preempt(ssn, stmt, preemptor, func(task *api.TaskInfo) bool {
 					// Ignore non running task.
 					if task.Status != api.Running {
 						return false
@@ -155,7 +155,7 @@ func preempt(
 	stmt *framework.Statement,
 	preemptor *api.TaskInfo,
 	filter func(*api.TaskInfo) bool,
-) bool {
+) (bool, error) {
 	assigned := false
 
 	allNodes := util.GetNodeList(ssn.Nodes)
@@ -245,5 +245,5 @@ func preempt(
 		}
 	}
 
-	return assigned
+	return assigned, nil
 }
