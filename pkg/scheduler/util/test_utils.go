@@ -126,11 +126,11 @@ func (fe *FakeEvictor) Evicts() []string {
 }
 
 // Evict is used by fake evictor to evict pods
-func (fe *FakeEvictor) Evict(p *v1.Pod) error {
+func (fe *FakeEvictor) Evict(p *v1.Pod, reason string) error {
 	fe.Lock()
 	defer fe.Unlock()
 
-	fmt.Println("PodName: ", p.Name)
+	fmt.Printf("PodName[%s]: be evicted because: %s\n", p.Name, reason)
 	key := fmt.Sprintf("%v/%v", p.Namespace, p.Name)
 	fe.evicts = append(fe.evicts, key)
 

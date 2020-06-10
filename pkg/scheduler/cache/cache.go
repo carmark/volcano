@@ -156,7 +156,7 @@ func (de *defaultEvictor) Evict(p *v1.Pod, reason string) error {
 		return nil
 	} else {
 		if _, err := de.kubeclient.CoreV1().Pods(p.Namespace).UpdateStatus(pod); err != nil {
-			klog.Errorf("Failed to update pod <%v/%v> status: %v", err)
+			klog.Errorf("Failed to update pod <%v/%v> status: %v", p.Namespace, p.Name, err)
 			return err
 		}
 	}
