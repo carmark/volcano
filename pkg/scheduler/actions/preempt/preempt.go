@@ -91,7 +91,7 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 
 			preemptorJob := preemptors.Pop().(*api.JobInfo)
 
-			stmt := ssn.Statement()
+			stmt := framework.NewStatement(ssn)
 			assigned := false
 			for {
 				// If job is pipelined, then stop preempting.
