@@ -79,7 +79,7 @@ func (gp *gangPlugin) OnSessionOpen(ssn *framework.Session) {
 			job := ssn.Jobs[preemptee.Job]
 			if job.Running() == false {
 				klog.V(4).Infof("Can not preempt task <%v/%v> because of non-running job",
-				preemptee.Namespace, preemptee.Name)
+					preemptee.Namespace, preemptee.Name)
 				continue
 			}
 			preemptable := pJob.Priority > job.Priority
@@ -121,17 +121,6 @@ func (gp *gangPlugin) OnSessionOpen(ssn *framework.Session) {
 
 		if rReady {
 			return -1
-		}
-
-		if !lReady && !rReady {
-			if lv.CreationTimestamp.Equal(&rv.CreationTimestamp) {
-				if lv.UID < rv.UID {
-					return -1
-				}
-			} else if lv.CreationTimestamp.Before(&rv.CreationTimestamp) {
-				return -1
-			}
-			return 1
 		}
 
 		return 0
