@@ -133,6 +133,7 @@ func (alloc *preemptAction) Execute(ssn *framework.Session) {
 			if ssn.JobPipelined(preemptorJob) {
 				klog.V(3).Infof("Job <%s/%s> is pipelined", preemptorJob.Namespace, preemptorJob.Name)
 				stmt.Commit()
+				break
 			} else {
 				klog.V(3).Infof("Job <%s/%s> is not pipelined, discard", preemptorJob.Namespace, preemptorJob.Name)
 				stmt.Discard()
@@ -163,6 +164,23 @@ func preempt(
 	nodeScores := util.PrioritizeNodes(preemptor, predicateNodes, ssn.BatchNodeOrderFn, ssn.NodeOrderMapFn, ssn.NodeOrderReduceFn)
 
 	selectedNodes := util.SortNodes(nodeScores)
+
+	klog.V(3).Infof("Use node with sufficient resources first.")
+	for _, node := range selectedNodes {
+		if preemptor.InitResreq.LessEqual(node.FutureIdle()) {
+			if err := stmt.Pipeline(preemptor, node.Name); err != nil {
+				klog.Errorf("Failed to pipeline Task <%s/%s> on Node <%s>",
+					preemptor.Namespace, preemptor.Name, node.Name)
+			}
+
+			// Ignore pipeline error, will be corrected in next scheduling loop.
+			assigned = true
+			klog.V(3).Infof("Select Node <%s> for Task <%s/%s>", node.Name, preemptor.Namespace, preemptor.Name)
+			return assigned, nil
+		}
+	}
+
+	klog.V(3).Infof("Begin do Preemption")
 	for _, node := range selectedNodes {
 		klog.V(3).Infof("Considering Task <%s/%s> on Node <%s>.",
 			preemptor.Namespace, preemptor.Name, node.Name)
