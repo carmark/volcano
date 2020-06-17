@@ -99,6 +99,8 @@ func (s *Statement) unevict(reclaimee *api.TaskInfo, reason string) error {
 	// Update task in node.
 	if node, found := s.ssn.Nodes[reclaimee.NodeName]; found {
 		node.UpdateTask(reclaimee)
+		klog.V(3).Infof("Unevict Task <%v/%v> from Node <%s> in Session <%s>",
+			reclaimee.Namespace, reclaimee.Name, reclaimee.NodeName, s.ssn.UID)
 	}
 
 	for _, eh := range s.ssn.eventHandlers {
@@ -132,8 +134,8 @@ func (s *Statement) Pipeline(task *api.TaskInfo, hostname string) error {
 			klog.Errorf("Failed to pipeline task <%v/%v> to node <%v> in Session <%v>: %v",
 				task.Namespace, task.Name, hostname, s.ssn.UID, err)
 		}
-		klog.V(3).Infof("After pipelined Task <%v/%v> to Node <%v>: idle <%v>, used <%v>, releasing <%v>",
-			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing)
+		klog.V(3).Infof("After pipelined Task <%v/%v> to Node <%v>: idle <%v>, used <%v>, releasing <%v>, pipelined <%v>",
+			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing, node.Pipelined)
 	} else {
 		klog.Errorf("Failed to found Node <%s> in Session <%s> index when binding.",
 			hostname, s.ssn.UID)
@@ -166,7 +168,7 @@ func (s *Statement) unpipeline(task *api.TaskInfo) error {
 				task.Namespace, task.Name, api.Pipelined, s.ssn.UID, err)
 		}
 	} else {
-		klog.Errorf("Failed to found Job <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Job <%s> in Session <%s> index when unbinding.",
 			task.Job, s.ssn.UID)
 	}
 
@@ -175,13 +177,13 @@ func (s *Statement) unpipeline(task *api.TaskInfo) error {
 
 	if node, found := s.ssn.Nodes[hostname]; found {
 		if err := node.RemoveTask(task); err != nil {
-			klog.Errorf("Failed to pipeline task <%v/%v> to node <%v> in Session <%v>: %v",
+			klog.Errorf("Failed to unpipeline task <%v/%v> from node <%v> in Session <%v>: %v",
 				task.Namespace, task.Name, hostname, s.ssn.UID, err)
 		}
-		klog.V(3).Infof("After pipelined Task <%v/%v> to Node <%v>: idle <%v>, used <%v>, releasing <%v>",
-			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing)
+		klog.V(3).Infof("After unpipelined Task <%v/%v> from Node <%v>: idle <%v>, used <%v>, releasing <%v>, pipelined <%v>",
+			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing, node.Pipelined)
 	} else {
-		klog.Errorf("Failed to found Node <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Node <%s> in Session <%s> index when unbinding.",
 			hostname, s.ssn.UID)
 	}
 

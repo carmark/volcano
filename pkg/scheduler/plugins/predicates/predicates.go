@@ -139,7 +139,7 @@ func (pp *predicatesPlugin) OnSessionOpen(ssn *framework.Session) {
 			nodeName := event.Task.NodeName
 			node, found := nodeMap[nodeName]
 			if !found {
-				klog.Warningf("predicates, update pod %s/%s allocate from NOT EXIST node [%s]", pod.Namespace, pod.Name, nodeName)
+				klog.Warningf("predicates, update pod %s/%s deallocate from NOT EXIST node [%s]", pod.Namespace, pod.Name, nodeName)
 			} else {
 				node.RemovePod(pod)
 				klog.V(4).Infof("predicates, update pod %s/%s deallocate from node [%s]", pod.Namespace, pod.Name, nodeName)

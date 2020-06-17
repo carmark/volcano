@@ -28,6 +28,9 @@ init:
 	mkdir -p ${BIN_DIR}
 	mkdir -p ${RELEASE_DIR}
 
+test: init
+	go build -ldflags ${LD_FLAGS} -o=${BIN_DIR}/e2e-test ./test/e2e
+
 vc-scheduler: init
 	go build -ldflags ${LD_FLAGS} -o=${BIN_DIR}/vc-scheduler ./cmd/scheduler
 
